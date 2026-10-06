@@ -1,0 +1,36 @@
+[project]
+name = "bridges-monitor"
+version = "0.1.0"
+description = "Моніторинг стану київських мостів (рух, обмеження) з публікацією в Telegram"
+readme = "README.md"
+authors = [
+    { name = "Yuriy Kopyl", email = "yuriy.kopyl@gmail.com" }
+]
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "aiogram>=3.31.0",
+    "aiohttp>=3.14.3",
+    "pydantic-settings>=2.15.0",
+    "tzdata>=2026.5",
+]
+
+[project.scripts]
+bridges-monitor = "bridges_monitor:main"
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+# Інтерпретатор надає pyenv (.python-version); uv не завантажує власний Python.
+python-preference = "only-system"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.10",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

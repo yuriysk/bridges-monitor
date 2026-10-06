@@ -1,0 +1,41 @@
+# Довідник автомобільних мостів Києва через Дніпро.
+# Модель і правила валідації: src/bridges_monitor/catalog.py
+#
+# Сервіс для автомобілістів: кожен міст несе автомобільний рух, метро — додатково.
+# Міст — один об'єкт, навіть якщо фізично складається з кількох споруд
+# (наприклад, з мостом через протоку). Порядок — з півночі на південь.
+
+# Разом із мостом через Десенку (власної назви не має).
+[[bridges]]
+id = "bridge-pivnich"
+name = { uk = "Північний міст", en = "Pivnichnyi Bridge" }
+modes = ["road"]
+
+# Метро-ярус будується.
+[[bridges]]
+id = "bridge-podil"
+name = { uk = "Подільсько-Воскресенський міст", en = "Podilsko-Voskresenskyi Bridge" }
+modes = ["road", "metro"]
+not_in_service = ["metro"]
+
+# Разом із Русанівським метромостом між Гідропарком і лівим берегом.
+[[bridges]]
+id = "bridge-metro"
+name = { uk = "Міст Метро", en = "Metro Bridge" }
+modes = ["road", "metro"]
+
+[[bridges]]
+id = "bridge-paton"
+name = { uk = "Міст Патона", en = "Paton Bridge" }
+modes = ["road"]
+
+# Автомобільно-залізничний; залізниця не відстежується.
+[[bridges]]
+id = "bridge-darnytsia"
+name = { uk = "Дарницький міст", en = "Darnytskyi Bridge" }
+modes = ["road"]
+
+[[bridges]]
+id = "bridge-pivden"
+name = { uk = "Південний міст", en = "Pivdennyi Bridge" }
+modes = ["road", "metro"]

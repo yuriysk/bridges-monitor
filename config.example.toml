@@ -1,0 +1,70 @@
+# Скопіюйте у config.toml. Змінні середовища BM_<ПОЛЕ> мають вищий пріоритет.
+
+# basic — лише офіційні джерела; extended — також неофіційні (модерація обов'язкова).
+edition = "basic"
+
+# Модерація людиною. Не задано — вимкнено в basic, увімкнено в extended.
+# У extended значення false заборонене.
+# moderation = true
+
+# Скільки діє твердження без явного терміну дії (ISO 8601 duration).
+stale_after = "PT6H"
+stale_after_alert = "PT30M"
+
+[alerts]
+# ukrainealarm — офіційний API (https://api.ukrainealarm.com);
+# alerts_in_ua — неофіційний (https://alerts.in.ua/api-request), лише для extended.
+provider = "ukrainealarm"
+region_id = "31"  # м. Київ
+poll_interval = "PT30S"
+# Токен краще задавати змінною середовища: BM_ALERTS__TOKEN=...
+
+# Джерела даних про затори: tomtom, here, google, mapbox.
+# Токен: BM_TRAFFIC__<ПРОВАЙДЕР>__TOKEN (наприклад, BM_TRAFFIC__TOMTOM__TOKEN).
+# Кожен цикл — 12 запитів маршрутизатора (6 мостів × 2 напрямки); розклад визначає
+# витрату квоти.
+# kind за замовчуванням "unofficial", тож у basic такі джерела заборонені.
+# TomTom не має даних по Україні; Mapbox має.
+# [traffic.mapbox]
+# kind = "unofficial"
+
+# Розклад опитування джерел заторів (київський час). Вікно діє від start до start
+# наступного; перше — з 00:00. normal — тривоги немає, alert — тривога є.
+# Нижче — типовий розклад (діє, якщо розділ не задано): 104 цикли на добу без
+# тривоги, 162 — з тривогою цілу добу. Окремий розклад для провайдера:
+# розділ [traffic.<провайдер>.schedule] того самого формату.
+# [traffic_schedule]
+# timezone = "Europe/Kyiv"
+# normal = [
+#   { start = "00:00", interval = "PT20M" },
+#   { start = "02:00", interval = "PT30M" },
+#   { start = "05:00", interval = "PT15M" },
+#   { start = "07:00", interval = "PT10M" },
+#   { start = "11:00", interval = "PT15M" },
+#   { start = "16:00", interval = "PT10M" },
+#   { start = "20:00", interval = "PT15M" },
+# ]
+# alert = [
+#   { start = "00:00", interval = "PT20M" },
+#   { start = "02:00", interval = "PT30M" },
+#   { start = "05:00", interval = "PT15M" },
+#   { start = "07:00", interval = "PT5M" },
+#   { start = "11:00", interval = "PT10M" },
+#   { start = "16:00", interval = "PT5M" },
+#   { start = "20:00", interval = "PT15M" },
+# ]
+
+# Приклад окремого розкладу для провайдера: Google лише під час тривоги
+# з 08:00 до 20:00 кожні 30 хвилин. Вікно без interval — не опитувати.
+# Найгірший випадок — ≈ 8 900 запитів на місяць (10 000 безкоштовно).
+# [traffic.google]
+# kind = "unofficial"
+# [traffic.google.schedule]
+# normal = [
+#   { start = "00:00" },
+# ]
+# alert = [
+#   { start = "00:00" },
+#   { start = "08:00", interval = "PT30M" },
+#   { start = "20:00" },
+# ]
