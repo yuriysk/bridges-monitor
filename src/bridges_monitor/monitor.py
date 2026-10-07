@@ -176,20 +176,17 @@ class Monitor:
             except SourceError as e:
                 log.warning("%s", e)
                 continue
-            claims = self.ingest(reports)
+            accepted, pending = self.ingest(reports)
             log.info(
                 "%s: %d тверджень%s",
                 source.source_id,
-                claims,
-                " (чекають на модерацію)"
-                if self.settings.moderation_enabled and claims
-                else "",
+                accepted,
+                f", з них {pending} чекають на модерацію" if pending else "",
             )
 
-    def ingest(self, reports: Iterable[Report]) -> int:
-        """Додати твердження з повідомлень; повертає кількість прийнятих."""
-        accepted = 0
-        moderation = initial_moderation(self.settings)
+    def ingest(self, reports: Iterable[Report]) -> tuple[int, int]:
+        """Додати твердження з повідомлень; повертає (прийнято, з них на модерації)."""
+        accepted = pending = 0
         for report in reports:
             if not accepts_source(self.settings, report.source_kind):
                 log.warning(
@@ -200,12 +197,13 @@ class Monitor:
                 continue
             if report.text is not None and not report.claims:
                 log.info("%s: text report skipped (no parser yet)", report.source_id)
-            self.claims.extend(
-                c.model_copy(update={"moderation": moderation}) for c in report.claims
-            )
-            accepted += len(report.claims)
+            for claim in report.claims:
+                moderation = initial_moderation(self.settings, claim)
+                self.claims.append(claim.model_copy(update={"moderation": moderation}))
+                accepted += 1
+                pending += moderation is ModerationStatus.PENDING
         self._dirty.set()
-        return accepted
+        return accepted, pending
 
     # --- стан ---
 

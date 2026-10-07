@@ -174,11 +174,18 @@ def test_diff_reports_only_changes():
     assert diff_states(after, after, NOW) == []
 
 
-def test_initial_moderation():
-    assert initial_moderation(BASIC) is ModerationStatus.APPROVED
-    assert initial_moderation(EXTENDED) is ModerationStatus.PENDING
+def test_initial_moderation_applies_to_status_claims_only():
+    status_claim = claim()
+    congestion_only = claim(status=None, congestion=CongestionLevel.HEAVY)
     moderated_basic = Settings(edition=Edition.BASIC, moderation=True)
-    assert initial_moderation(moderated_basic) is ModerationStatus.PENDING
+
+    assert initial_moderation(BASIC, status_claim) is ModerationStatus.APPROVED
+    assert initial_moderation(EXTENDED, status_claim) is ModerationStatus.PENDING
+    assert initial_moderation(moderated_basic, status_claim) is ModerationStatus.PENDING
+    for settings in (BASIC, EXTENDED, moderated_basic):
+        assert (
+            initial_moderation(settings, congestion_only) is ModerationStatus.APPROVED
+        )
 
 
 @pytest.mark.parametrize(

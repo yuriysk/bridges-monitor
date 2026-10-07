@@ -197,13 +197,28 @@ async def test_source_errors_do_not_stop_polling():
     assert recorder.changes
 
 
-async def test_extended_edition_keeps_claims_pending():
+async def test_extended_edition_publishes_congestion_but_moderates_status():
     source = FakeTraffic(kind=SourceKind.UNOFFICIAL)
     monitor, recorder = make_monitor([source], edition=Edition.EXTENDED)
     await run_for(monitor, 0.1)
-    assert monitor.claims
-    assert {c.moderation for c in monitor.claims} == {ModerationStatus.PENDING}
-    assert recorder.changes == []
+    # Затори — без модерації.
+    assert {c.moderation for c in monitor.claims} == {ModerationStatus.APPROVED}
+    assert recorder.changes[0].after.congestion is CongestionLevel.HEAVY
+
+    # Твердження про закриття чекає на модератора й на стан не впливає.
+    closure = source.make_report(
+        claims=[
+            {
+                "bridge_id": "bridge-paton",
+                "mode": TransportMode.ROAD,
+                "status": TrafficStatus.CLOSED,
+                "observed_at": datetime.now(UTC),
+            }
+        ]
+    )
+    assert monitor.ingest([closure]) == (1, 1)
+    await monitor.recompute()
+    assert monitor.states[PATON_LEFT].status is TrafficStatus.UNKNOWN
 
 
 def test_basic_edition_drops_unofficial_reports():

@@ -31,8 +31,13 @@ def accepts_source(settings: Settings, kind: SourceKind) -> bool:
     return settings.edition is Edition.EXTENDED or kind is SourceKind.OFFICIAL
 
 
-def initial_moderation(settings: Settings) -> ModerationStatus:
-    if settings.moderation_enabled:
+def initial_moderation(settings: Settings, claim: Claim) -> ModerationStatus:
+    """Модерація потрібна лише твердженням про статус (відкрито/обмежено/закрито).
+
+    Твердження лише про завантаженість (автоматичні дані про затори) статус мосту
+    не змінюють і схвалюються без модерації — рішення користувача.
+    """
+    if settings.moderation_enabled and claim.status is not None:
         return ModerationStatus.PENDING
     return ModerationStatus.APPROVED
 
